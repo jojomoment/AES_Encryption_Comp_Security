@@ -1,9 +1,12 @@
 package org.example;
 
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
+
 
 public class Methods
 {
@@ -52,16 +55,28 @@ public class Methods
                     // user enters file name, state what characters are valid
                     // check wheter its vaild or not, exception handeling
                     // confirmation message
+                    // access file
+                    // convert file data into bytes
+
                     // save encrypted file, so that can decrypt
                     // re display main menu, while having encrypted file saved in background
                     // how do i prove file  is encrypted
+                    // what characters are allowed for the filename
+                    //dont allow spaces
 
                     System.out.println("Please enter the file name");
-                    String fileName = keyboard.next();
+                    String fileName = keyboard.nextLine();
+                    fileName =validateFileName(fileName);
                     System.out.println("Searching for file:");
+                    //access file, turn data into bytes
+//                      readTextFile(fileName);
+
+
                     System.out.println(fileName + " has been found:");
+//                    Encryption.encryptFile(fileName);
                     System.out.println("file has been encrypted");
                     System.out.println();
+
 
                     //redisplaying menu
 
@@ -92,6 +107,8 @@ public class Methods
             {
                 System.out.println("invalid input - please try again: ");
                 System.out.println();
+//            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
             }
 
 
@@ -115,6 +132,7 @@ public class Methods
         return randomKey;
     }
 
+
     //validating entered file
 
     public static String validateFileName (String filename)
@@ -126,9 +144,17 @@ public class Methods
         }
         else
         {
-            return filename ;
+            //forgot to include the .txt
+            System.out.println(".txt has been added to your filename so it can be found:");
+            System.out.println();
+            return filename +".txt" ;
         }
 
     }
+
+
+
+
+
 
 }
