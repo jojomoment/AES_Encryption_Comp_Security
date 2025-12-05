@@ -1,8 +1,12 @@
 package org.example;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.io.*;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
@@ -10,6 +14,10 @@ import java.util.Scanner;
 
 public class Methods
 {
+
+    SecretKey secretKey;
+    private Cipher encryptionCipher;
+
     //making main menu
     public void MainMenu()
     {
@@ -51,13 +59,16 @@ public class Methods
                 input = keyboard.nextInt();
 
                 if (input == 1) {
-                    // does redisplay menu
-                    // user enters file name, state what characters are valid
-                    // check wheter its vaild or not, exception handeling
-                    // confirmation message
+
+                    if(secretKey == null)
+                    {
+                        // generates secrert key if null
+                        init();
+                    }
+
+                   // state what characters are valid
                     // access file
                     // convert file data into bytes
-
                     // save encrypted file, so that can decrypt
                     // re display main menu, while having encrypted file saved in background
                     // how do i prove file  is encrypted
@@ -65,16 +76,28 @@ public class Methods
                     //dont allow spaces
 
                     System.out.println("Please enter the file name");
-                    String fileName = keyboard.nextLine();
+                    String fileName = keyboard.next();
+
+                    //validataes file name
                     fileName =validateFileName(fileName);
-                    System.out.println("Searching for file:");
-                    //access file, turn data into bytes
-//                      readTextFile(fileName);
 
 
-                    System.out.println(fileName + " has been found:");
-//                    Encryption.encryptFile(fileName);
+
+
+                    //turns file data into array, encrypts data
+                   byte[] encrypedData =  encrypt( filedDataToByteArray(fileName));
+
+
+
+                    //save encrypted data to file
+                    saveEncryptedDataToFile(fileName,encrypedData);
+
+                    // displaying secret key
+                    String readableSecretKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+                    System.out.println("secret key; "+readableSecretKey);
+
                     System.out.println("file has been encrypted");
+
                     System.out.println();
 
 
@@ -109,6 +132,12 @@ public class Methods
                 System.out.println();
 //            } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
 
 
@@ -123,14 +152,7 @@ public class Methods
     //aes has shifting of bytes
     //
 
-    public static int RandomEncryptionKey()
-    {
-        Random rand = new Random();
 
-        int randomKey = rand.nextInt(10000);
-
-        return randomKey;
-    }
 
 
     //validating entered file
@@ -151,6 +173,75 @@ public class Methods
         }
 
     }
+
+    //converting file data to bytes
+    public static byte[] filedDataToByteArray(String filename) throws FileNotFoundException, IOException
+    {
+        //intialiing the file
+        File file = new File(filename);
+
+        FileInputStream f1 = new FileInputStream(file);
+
+        byte[]data = new byte[(int) file.length()];
+        f1.read(data);
+        f1.close();
+
+        return data;
+
+
+    }
+
+    public void init() throws NoSuchAlgorithmException
+    {
+        KeyGenerator generator = KeyGenerator.getInstance("AES");
+        generator.init(128);
+
+        secretKey = generator.generateKey();
+
+
+
+
+    }
+
+    public byte[] encrypt(byte[] fileData) throws Exception
+    {
+
+        encryptionCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+        byte[] encryptedBytes = encryptionCipher.doFinal(fileData);
+
+
+        //generating and saving iv, needed for decryption
+        byte[] iv = encryptionCipher.getIV();
+
+        try(FileOutputStream fos = new FileOutputStream("IV.txt"))
+        {
+ fos.write(iv);
+        }
+
+        return encryptedBytes;
+
+
+
+
+    }
+
+    //      // Source - https://stackoverflow.com/a
+//// Posted by bmargulies, modified by community. See post 'Timeline' for change history
+//// Retrieved 2025-12-05, License - CC BY-SA 3.0
+
+    public static void saveEncryptedDataToFile(String filename, byte[] encryptedData) throws Exception
+    {
+
+        try (FileOutputStream fos = new FileOutputStream("ciphertext.txt"))
+     {
+         fos.write(encryptedData);
+     }
+
+    }
+//
+
 
 
 
