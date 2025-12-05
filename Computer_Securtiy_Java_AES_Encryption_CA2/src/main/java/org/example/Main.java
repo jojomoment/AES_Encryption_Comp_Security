@@ -1,6 +1,7 @@
 package org.example;
 
 import java.io.*;
+import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 //https://www.geeksforgeeks.org/java/java-program-to-convert-file-to-a-byte-array/
@@ -19,6 +20,7 @@ String filename = keyboard.nextLine();
   byte[] fileByteData =filedDataToByteArray(filename);
 
 
+ // checking if encryption is working
   System.out.println("byte data  :");
 
   for(int i=0;i<fileByteData.length;i++)
@@ -28,37 +30,51 @@ String filename = keyboard.nextLine();
 
   }
 
-  System.out.println();
+
+
+  try{
+      AEusingIV aes = new  AEusingIV();
+      aes.init();
+
+
+      // encrypts file bytes
+      byte[] encryptedData = aes.encrypt(fileByteData);
+
+      // Source - https://stackoverflow.com/a
+// Posted by bmargulies, modified by community. See post 'Timeline' for change history
+// Retrieved 2025-12-05, License - CC BY-SA 3.0
+
+      try (FileOutputStream fos = new FileOutputStream("ciphertext.txt"))
+      {
+          fos.write(encryptedData);
+          //fos.close(); There is no more need for this line since you had created the instance of "fos" inside the try. And this will automatically close the OutputStream
+      }
+
+
+  } catch (Exception e)
+  {
+      throw new RuntimeException(e);
+  }
+
+        byte[] savedBytes = java.nio.file.Files.readAllBytes(new File("ciphertext.txt").toPath());
+
+        System.out.println("Bytes in ciphertext.bin:");
+        for (int i = 0; i < savedBytes.length; i++)
+        {
+            System.out.print(savedBytes[i] + " ");
+
+        }
+        System.out.println();
+
+
 
 
 //        j.MainMenu();
         }
 
-        // reads file data converts to bytes
-//    public static byte[] readTextFile(String  filename ) throws FileNotFoundException, IOException {
-//        File file = new File(filename);
-//
-//        try (Scanner reader = new Scanner (file))
-//        {
-//            while ( reader.hasNextLine())
-//            {
-//                String data  = reader.nextLine();
-////                System.out.println(data);
-//                byte[] dataInBytes = data.getBytes();
-//
-//                for(int i = 0; i < dataInBytes.length; i++)
-//                {
-//                    System.out.print(dataInBytes[i]+" ");
-//                }
-//                System.out.println();
-//            }
-//        }catch (FileNotFoundException e)
-//        {
-//            System.out.println("File not found");
-//        }
-//
-//
-//    }
+
+
+
 
     public static byte[] filedDataToByteArray(String filename) throws FileNotFoundException, IOException
     {
@@ -75,4 +91,6 @@ String filename = keyboard.nextLine();
 
 
     }
+
+
     }

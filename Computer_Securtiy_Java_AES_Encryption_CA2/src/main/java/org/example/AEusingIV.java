@@ -16,12 +16,18 @@ public class AEusingIV
     SecretKey secretKey;
     private Cipher encryptionCipher;
 
+
+
     public void init() throws NoSuchAlgorithmException
     {
         KeyGenerator generator = KeyGenerator.getInstance("AES");
         generator.init(128);
 
         secretKey = generator.generateKey();
+
+        //displaying random key
+        String readableSecretKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+        System.out.println("Secret Key: " + readableSecretKey);
     }
 
     //replace with file byte array
@@ -32,7 +38,7 @@ public class AEusingIV
         encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
         byte[] encryptedBytes = encryptionCipher.doFinal(fileData);
-        return Base64.getEncoder().encodeToString(encryptedBytes).getBytes();
+        return encryptedBytes;
 
     }
 
