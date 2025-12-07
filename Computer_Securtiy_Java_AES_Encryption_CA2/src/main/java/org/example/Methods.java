@@ -332,9 +332,7 @@
 
         }
 
-        //      // Source - https://stackoverflow.com/a
-    //// Posted by bmargulies, modified by community. See post 'Timeline' for change history
-    //// Retrieved 2025-12-05, License - CC BY-SA 3.0
+
 
 
 
@@ -378,7 +376,12 @@
         }
 
 
-    //
+        // references
+        //https://www.youtube.com/watch?v=J1RmZZEkN0k&list=PLtgomJ95NvbPDMQClkBZPijLdEFyo0VHa
+        //https://www.baeldung.com/java-aes-encryption-decryption
+        //https://howtodoinjava.com/java/java-security/aes-256-encryption-decryption/
+
+
 
 
 
