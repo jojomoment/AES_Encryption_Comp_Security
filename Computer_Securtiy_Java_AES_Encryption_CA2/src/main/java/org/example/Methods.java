@@ -1,251 +1,389 @@
-package org.example;
+    package org.example;
 
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import java.io.*;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.InputMismatchException;
-import java.util.Random;
-import java.util.Scanner;
+    import javax.crypto.*;
+    import javax.crypto.spec.IvParameterSpec;
+    import java.io.*;
+    import java.security.InvalidAlgorithmParameterException;
+    import java.security.InvalidKeyException;
+    import java.security.NoSuchAlgorithmException;
+    import java.util.Base64;
+    import java.util.InputMismatchException;
+    import java.util.Scanner;
 
 
-public class Methods
-{
-
-    SecretKey secretKey;
-    private Cipher encryptionCipher;
-
-    //making main menu
-    public void MainMenu()
+    public class Methods
     {
-// prob need to add try and catch, stuff along those lines to ensure code dosent break
-        // what if file is already encrypted , would js need to decrypt
-        // alow user to rencrypt decrypted file?
-        // could implement a timeout if file isnt found after period of time
-        // could use switch and case for menu, looks more cleanier
 
-        int input = -1;
+        //creates secrey key  and encryption cipher
+        SecretKey secretKey;
+        private Cipher encryptionCipher;
 
-//        int test = Encryption.test();
-//
-//        System.out.println("testing cross method :"+test);
+        //main display method
+        public void MainMenu()
+        {
 
+            // could use switch and case for menu, looks more cleanier
 
-
-
+            //ensures menu loop runs atleast oncc
+            int input = -1;
 
 
 
-// gets re prompted to enter input, had to enter in quit input
-// i called main menu in which made it need to enter it twice
-        // how to tell user if input is inavlid menu range eg 10 20
+            do {
+                try {
+
+                    // displaying menu
+                    System.out.println(" password encoding software \n" +
+                                        "please select an option:\n" +
+                                        "1. Encrypt file\n" +
+                                        "2. Decrypt file\n" +
+                                        "3. Quit application");
 
 
-        do {
-            try {
+                     // user input
+                    Scanner keyboard = new Scanner(System.in);
+                    input = keyboard.nextInt();
 
-                System.out.println(" password encoding software \n" +
-                        "please select an option:\n" +
-                        "1. Encrypt file\n" +
-                        "2. Decrypt file\n" +
-                        "3. Quit application");
-
-
-
-                Scanner keyboard = new Scanner(System.in);
-                input = keyboard.nextInt();
-
-                if (input == 1) {
-
-                    if(secretKey == null)
+                    if (input == 1)
                     {
-                        // generates secrert key if null
-                        init();
+
+                        if(secretKey == null)
+                        {
+                            // generates secrert key if null
+                            init();
+                        }
+
+
+
+                        System.out.println("Please enter the file name");
+                        //user entered file name
+                        String fileName = keyboard.next();
+
+                        //validataes file name
+                        fileName =validateFileName(fileName);
+
+
+                        //turns file data into array, encrypts data
+                       byte[] encrypedData =  encrypt( filedDataToByteArray(fileName));
+
+
+
+                        //save encrypted data to file
+                        saveEncryptedDataToFile(fileName,encrypedData);
+
+                        // displaying secret key
+                        String readableSecretKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+                        System.out.println("secret key; "+readableSecretKey);
+
+                        System.out.println("file has been encrypted");
+
+                        System.out.println();
+
+
+
+
+                    } else if (input == 2)
+                    {
+                        System.out.println();
+                        System.out.println("Please enter the  encrypted file name:");
+                        String encryptedFileName = keyboard.next();
+
+                        //getting encrypted data
+                            byte [] encryptdData  = filedDataToByteArray(encryptedFileName);
+
+
+                        //converts users input into  actual secret key object
+
+                        SecretKey userInputKey = null;
+
+                        //loops until user enters right key
+                        while(userInputKey == null)
+                        {
+                            System.out.println("please enter a valid key:\n");
+                            String enteredKey = keyboard.next();
+
+                            userInputKey = convertUserInputKey(enteredKey);
+
+
+                        }
+
+                        // decrypt attempt, if decrypt works, correct key, if not incorrect key
+                        byte[] decryptedData = decrypt(encryptdData,userInputKey);
+
+                        // save decrypted data to file
+                        saveDecryptedDataToFile(decryptedData);
+
+                        System.out.println("file has been decrypted");
+                        System.out.println("file data has ben placed in plaintext.txt file: ");
+
+
                     }
 
-                   // state what characters are valid
-                    // access file
-                    // convert file data into bytes
-                    // save encrypted file, so that can decrypt
-                    // re display main menu, while having encrypted file saved in background
-                    // how do i prove file  is encrypted
-                    // what characters are allowed for the filename
-                    //dont allow spaces
+                    else if (input == 3)
+                    {
+                        //checking if code will end
+                        System.out.println("Thank you for using  our software.\n" +
+                                           " See you again soon!!!");
+                        System.out.println();
 
-                    System.out.println("Please enter the file name");
-                    String fileName = keyboard.next();
-
-                    //validataes file name
-                    fileName =validateFileName(fileName);
-
-
-
-
-                    //turns file data into array, encrypts data
-                   byte[] encrypedData =  encrypt( filedDataToByteArray(fileName));
-
-
-
-                    //save encrypted data to file
-                    saveEncryptedDataToFile(fileName,encrypedData);
-
-                    // displaying secret key
-                    String readableSecretKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
-                    System.out.println("secret key; "+readableSecretKey);
-
-                    System.out.println("file has been encrypted");
-
-                    System.out.println();
-
-
-                    //redisplaying menu
-
-
-                } else if (input == 2) {
-                    //ask user to enter encrypted file
-                    // state whether  vaild or not
-                    //check if file is actually encrypted
-                    // decrypt file, and save in background
-                    // confirmation message
-                    // redisplay main menu
-
-
-                } else if (input == 3) {
-                    //checking if code will end
-                    System.out.println("Thank you for using  our software.\n" +
-                            " See you again soon!!!");
-                    System.out.println();
-
+                    }
+                    else
+                    {
+                        System.out.println(+input+ " is not a valid menu option, please try again:");
+                        System.out.println();
+                    }
                 }
-                else
+
+                catch (InputMismatchException e)
                 {
-                    System.out.println(+input+ " is not a valid menu option, please try again:");
+                    System.out.println("invalid input - please try again: ");
                     System.out.println();
+
+
+
+                } catch (FileNotFoundException e)
+                {
+                    System.out.println("file not found - please try again: ");
+                    System.out.println();
+
                 }
+
+                //if user enters incorect key
+                catch (BadPaddingException e)
+                {
+                        System.out.println("Error Incorrect Key or corrupted ciphertext, please try again: ");
+                }
+
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+
+                catch (Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+
+
             }
-            catch (InputMismatchException e)
+
+            while (input != 3);
+
+        }
+
+
+
+
+
+
+        public static String validateFileName (String filename)
+        {
+
+            if(filename.endsWith(".txt"))
             {
-                System.out.println("invalid input - please try again: ");
+
+                return filename;
+            }
+
+            else
+            {
+
+                System.out.println(".txt has been added to your filename so it can be found:");
                 System.out.println();
-//            } catch (FileNotFoundException e) {
+                return filename +".txt" ;
+            }
+
+        }
+
+        //converting file data to bytes
+        public static byte[] filedDataToByteArray(String filename) throws IOException
+        {
+            //intialiing the file
+
+            // file object
+            File file = new File(filename);
+
+            // opens file and reads raw bytes
+            FileInputStream f1 = new FileInputStream(file);
+
+            //creates byte array big enough for data
+            byte[]data = new byte[(int) file.length()];
+
+
+            f1.read(data);
+
+            // closes file
+            f1.close();
+
+            return data;
+
+        }
+
+
+        //generates secretkey
+        public void init() throws NoSuchAlgorithmException
+        {
+            //generating secret key for AES algoritihm
+            KeyGenerator generator = KeyGenerator.getInstance("AES");
+            generator.init(128);
+
+            secretKey = generator.generateKey();
+
+
+        }
+
+        //decryption
+        //https://www.javacodegeeks.com/2018/03/aes-encryption-and-decryption-in-javacbc-mode.html
+
+        public byte [] decrypt (byte[] fileData ,SecretKey secretKey)
+        {
+            try
+            {
+                //getting iv from file
+             FileInputStream fis = new FileInputStream("IV.txt");
+             byte[] ivByteData = fis.readAllBytes();
+             fis.close();
+
+             //creating iv object to use
+                IvParameterSpec iv = new IvParameterSpec(ivByteData);
+
+                // creating new cipher
+                Cipher decryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+
+                    //initalising in decrypt mode
+                decryptCipher.init(Cipher.DECRYPT_MODE,secretKey,iv);
+
+                //decypted bytes
+               byte [] decyptdByteData = decryptCipher.doFinal(fileData);
+
+
+                return decyptdByteData;
+
+
+
+
+            }
+
+            catch (FileNotFoundException e)
+            {
                 throw new RuntimeException(e);
-            } catch (FileNotFoundException e) {
+            }
+
+            catch (IOException e)
+            {
                 throw new RuntimeException(e);
-            } catch (IOException e) {
+            }
+
+            catch (NoSuchPaddingException e)
+            {
                 throw new RuntimeException(e);
-            } catch (Exception e) {
+            }
+
+            catch (NoSuchAlgorithmException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+            catch (InvalidAlgorithmParameterException e)
+            {
+                throw new RuntimeException(e);
+            }
+            catch (InvalidKeyException e)
+            {
+                throw new RuntimeException(e);
+            }
+            catch (IllegalBlockSizeException e)
+            {
+                throw new RuntimeException(e);
+            }
+            catch (BadPaddingException e)
+            {
                 throw new RuntimeException(e);
             }
 
 
         }
 
-        while (input != 3);
+        public byte[] encrypt(byte[] fileData) throws Exception
+        {
 
-    }
+            //creates cipher in cbc mode with PKCS5Padding
+            encryptionCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
-    //generate random encryption key for file
-    //aes is a symetric key
-    //aes has shifting of bytes
+            //initalizing encryption cipher
+            encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+
+            byte[] encryptedBytes = encryptionCipher.doFinal(fileData);
+
+
+            //generating and saving iv, needed for decryption
+            byte[] iv = encryptionCipher.getIV();
+
+
+            try(FileOutputStream fos = new FileOutputStream("IV.txt"))
+            {
+              fos.write(iv);
+            }
+
+            return encryptedBytes;
+
+
+        }
+
+        //      // Source - https://stackoverflow.com/a
+    //// Posted by bmargulies, modified by community. See post 'Timeline' for change history
+    //// Retrieved 2025-12-05, License - CC BY-SA 3.0
+
+
+
+        public static void saveDecryptedDataToFile( byte[] decrytpedByteData) throws Exception
+        {
+
+            try (FileOutputStream fos = new FileOutputStream("plaintext.txt"))
+            {
+                fos.write(decrytpedByteData);
+            }
+
+        }
+
+        public static void saveEncryptedDataToFile( String filename,byte[] encryptedData) throws Exception
+        {
+
+            try (FileOutputStream fos = new FileOutputStream("ciphertext.txt"))
+            {
+                fos.write(encryptedData);
+            }
+
+        }
+
+        public SecretKey convertUserInputKey(String inputtedKey)
+        {
+            try {
+                //converts users inputed plaintext into bytes
+                byte[] usersSecretKey = Base64.getDecoder().decode(inputtedKey);
+
+                // creates new secret key object based off of users input
+                return new javax.crypto.spec.SecretKeySpec(usersSecretKey, "AES");
+            }
+            // if user inputs wrong key format eg a
+            catch (IllegalArgumentException e)
+            {
+                System.out.println("invalid key format entered, please try again");
+                System.out.println();
+            }
+
+            return null;
+        }
+
+
     //
 
 
 
 
-    //validating entered file
-
-    public static String validateFileName (String filename)
-    {
-        if(filename.endsWith(".txt"))
-        {
-
-            return filename;
-        }
-        else
-        {
-            //forgot to include the .txt
-            System.out.println(".txt has been added to your filename so it can be found:");
-            System.out.println();
-            return filename +".txt" ;
-        }
-
-    }
-
-    //converting file data to bytes
-    public static byte[] filedDataToByteArray(String filename) throws FileNotFoundException, IOException
-    {
-        //intialiing the file
-        File file = new File(filename);
-
-        FileInputStream f1 = new FileInputStream(file);
-
-        byte[]data = new byte[(int) file.length()];
-        f1.read(data);
-        f1.close();
-
-        return data;
-
-
-    }
-
-    public void init() throws NoSuchAlgorithmException
-    {
-        KeyGenerator generator = KeyGenerator.getInstance("AES");
-        generator.init(128);
-
-        secretKey = generator.generateKey();
-
 
 
 
     }
-
-    public byte[] encrypt(byte[] fileData) throws Exception
-    {
-
-        encryptionCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey);
-
-        byte[] encryptedBytes = encryptionCipher.doFinal(fileData);
-
-
-        //generating and saving iv, needed for decryption
-        byte[] iv = encryptionCipher.getIV();
-
-        try(FileOutputStream fos = new FileOutputStream("IV.txt"))
-        {
- fos.write(iv);
-        }
-
-        return encryptedBytes;
-
-
-
-
-    }
-
-    //      // Source - https://stackoverflow.com/a
-//// Posted by bmargulies, modified by community. See post 'Timeline' for change history
-//// Retrieved 2025-12-05, License - CC BY-SA 3.0
-
-    public static void saveEncryptedDataToFile(String filename, byte[] encryptedData) throws Exception
-    {
-
-        try (FileOutputStream fos = new FileOutputStream("ciphertext.txt"))
-     {
-         fos.write(encryptedData);
-     }
-
-    }
-//
-
-
-
-
-
-
-
-}
